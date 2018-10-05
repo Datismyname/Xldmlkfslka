@@ -20,15 +20,24 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:gravity="right"
+        android:orientation="vertical"
         android:paddingBottom="10pt"
         android:paddingLeft="2pt"
         android:paddingRight="2pt"
         android:paddingTop="10pt">
 
+        <TextView
+            android:id="@+id/tvPhoneType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:text="نوع الجوال"
+            android:textSize="18sp" />
+
         <EditText
             android:id="@+id/etPhoneType"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="1pt"
             android:layout_weight="1"
@@ -36,14 +45,31 @@
             android:ems="10"
             android:inputType="textPersonName" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="10pt"
+        android:paddingLeft="2pt"
+        android:paddingRight="2pt"
+        android:paddingTop="10pt">
+
         <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvMobileNumber"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:text="نوع الجوال"
+            android:text=" رقم الهاتف للتواصل )اختياري( "
             android:textSize="18sp" />
 
+        <EditText
+            android:id="@+id/etMobileNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/gray"
+            android:ems="10"
+            android:inputType="textPersonName" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,7 +83,7 @@
         android:paddingTop="10pt">
 
         <TextView
-            android:id="@+id/textView5"
+            android:id="@+id/tvProblem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="وصف المشكلة"
