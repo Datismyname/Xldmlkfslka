@@ -1,6 +1,10 @@
 package com.syana.saudi.syanh
 
+import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -14,6 +18,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Exception
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -59,7 +64,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getUserLocation() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val myLocation = MyLocationListener()
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3, 3f , myLocation)
+
+        val locationUpdaterThread = LocationUpdaterThread()
+        locationUpdaterThread.start()
     }
 
     /**
@@ -74,13 +85,85 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
+        /*// Add a marker in Sydney and move the camera
         val sydney = LatLng(-34.0, 151.0)
         mMap.addMarker(MarkerOptions().position(sydney)
                 .title("Marker in Sydney")
                 .snippet("her is me")
                 //.icon(BitmapDescriptorFactory.fromResource(R.drawable.memarker))
         )
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))*/
     }
+
+    var myLocation:Location? = null
+
+    inner class MyLocationListener : LocationListener{
+
+        constructor(){
+            myLocation = Location("me")
+            myLocation!!.latitude = 50.0
+            myLocation!!.longitude = 150.0
+        }
+
+        override fun onLocationChanged(location: Location?) {
+            myLocation = location
+        }
+
+        override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
+
+        }
+
+        override fun onProviderEnabled(p0: String?) {
+
+        }
+
+        override fun onProviderDisabled(p0: String?) {
+
+        }
+
+    }
+
+    inner class LocationUpdaterThread: Thread{
+
+        constructor(){
+
+        }
+
+        override fun run() {
+
+            while (true){
+                try {
+                    Toast.makeText(this@MapsActivity, "inside while", Toast.LENGTH_LONG).show()
+
+                    mMap.clear()
+                    runOnUiThread {
+
+                        val sydney = LatLng(myLocation!!.altitude, myLocation!!.longitude)
+                        mMap.addMarker(MarkerOptions().position(sydney)
+                                .title("Marker in Sydney")
+                                .snippet("her is me")
+                                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.memarker))
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+
+                    }
+
+
+                    Thread.sleep(100)
+                }catch (e: Exception){
+
+                }
+
+
+
+            }
+
+        }
+
+
+
+
+    }
+
+
 }
