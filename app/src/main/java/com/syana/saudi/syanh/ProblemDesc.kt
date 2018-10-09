@@ -1,5 +1,6 @@
 package com.syana.saudi.syanh
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -15,14 +16,14 @@ class ProblemDesc : AppCompatActivity() {
     private var myRef = database.reference
     private val firebaseFirestore = FirebaseFirestore.getInstance()
 
-    val bundle = intent.extras
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_problem_desc)
 
 
-
+        val bundle = intent.extras
         tvTitle.text = bundle.getString("title")
 
         mAuth = FirebaseAuth.getInstance()
@@ -33,6 +34,10 @@ class ProblemDesc : AppCompatActivity() {
 
     fun buSendOrderEvent(view: View){
 
+        val intent = Intent(this, MapsActivity::class.java)
+        //intent.putExtra("title", mRepair.title)
+        startActivity( intent )
+        /*
         val userID = mAuth!!.currentUser!!.uid
 
         val orderMap = HashMap< String, Any >()
@@ -60,7 +65,7 @@ class ProblemDesc : AppCompatActivity() {
             }
         }
 
-
+*/
     }
 
 
