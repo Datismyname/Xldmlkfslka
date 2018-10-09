@@ -49,6 +49,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         when(requestCode){
             acessLocation->{
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Toast.makeText(this,"location access is granted!", Toast.LENGTH_LONG).show()
                     getUserLocation()
                 }else{
                     Toast.makeText(this,"location access is denied!", Toast.LENGTH_LONG).show()
