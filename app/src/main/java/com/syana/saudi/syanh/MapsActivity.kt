@@ -23,6 +23,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlin.Exception
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
@@ -30,6 +31,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var lastLocation: Location
+    private var lastLocationMarker:Marker? = null
+    var oldLocationMarker:Marker? = null
+
     // 1
     private lateinit var locationCallback: LocationCallback
     // 2
@@ -56,6 +60,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
+
+
 
                 lastLocation = p0.lastLocation
                 placeMarkerOnMap(LatLng(lastLocation.latitude, lastLocation.longitude))
@@ -179,7 +185,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 .snippet("her is me")
                 //.icon(BitmapDescriptorFactory.fromResource(R.drawable.memarker))
         )
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
+        //map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 14f))
 
         setUpMap()
 
@@ -196,25 +202,43 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         map.isMyLocationEnabled = true
 
-        fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this) { location ->
             // Got last known location. In some rare situations this can be null.
             if (location != null) {
                 lastLocation = location
                 val currentLatLng = LatLng(location.latitude, location.longitude)
                 placeMarkerOnMap(currentLatLng)
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
             }
         }
     }
 
 
 
-
     private fun placeMarkerOnMap(location: LatLng) {
         // 1
         val markerOptions = MarkerOptions().position(location)
+
         // 2
-        map.addMarker(markerOptions)
+        lastLocationMarker = map.addMarker(markerOptions)
+
+        try {
+            if (lastLocationMarker != null && oldLocationMarker != null) {
+                Toast.makeText(this , "if statment lastLocationMarker " + lastLocationMarker + " oldLocationMarker" + oldLocationMarker, Toast.LENGTH_LONG).show()
+                if (lastLocationMarker!!.id == oldLocationMarker!!.id) {
+                    lastLocationMarker!!.remove()
+                }
+            }else{
+                Toast.makeText(this , "else statment lastLocationMarker " + lastLocationMarker + " oldLocationMarker" + oldLocationMarker, Toast.LENGTH_LONG).show()
+
+            }
+        }catch (e:java.lang.Exception){
+            Toast.makeText(this , "ERROR: " + e.message, Toast.LENGTH_LONG).show()
+        }
+
+
+        oldLocationMarker = lastLocationMarker
+
     }
 
 
