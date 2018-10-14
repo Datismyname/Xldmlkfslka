@@ -5,31 +5,30 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
+import android.support.v4.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.location.LocationServices
-import kotlinx.android.synthetic.main.activity_maps.*
+
+class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
-
+    private lateinit var mView: View
+    private lateinit var mMapView: MapView
 
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var lastLocation: Location
-    private var lastLocationMarker:Marker? = null
+    private var lastLocationMarker: Marker? = null
     var firstTime = true
     var cameraTracksLocation = true
 
@@ -46,19 +45,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     }
 
 
+
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        mView =  inflater!!.inflate(R.layout.fragment_map, container, false)
+        return mView
+    }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        mMapView = mView.findViewById(R.id.mapView)
+
+        if (mMapView != null){
+
+            mMapView.onCreate(null)
+            mMapView.onResume()
+            mMapView.getMapAsync(this)
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_maps)
 
-        setSupportActionBar(tbFindStoreMaps)
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        /*val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)*/
 
 
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
@@ -80,9 +96,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     private fun startLocationUpdates() {
         //1
-        if (ActivityCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(activity,
                     arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                     LOCATION_PERMISSION_REQUEST_CODE)
             return
@@ -105,7 +121,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 .addLocationRequest(locationRequest)
 
         // 4
-        val client = LocationServices.getSettingsClient(this)
+        val client = LocationServices.getSettingsClient(activity)
         val task = client.checkLocationSettings(builder.build())
 
         // 5
@@ -121,7 +137,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 try {
                     // Show the dialog by calling startResolutionForResult(),
                     // and check the result in onActivityResult().
-                    e.startResolutionForResult(this@MapsActivity,
+                    e.startResolutionForResult(activity,
                             REQUEST_CHECK_SETTINGS)
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
@@ -209,16 +225,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
 
     private fun setUpMap() {
-        if (ActivityCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(activity,
                     arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
             return
         }
 
         map.isMyLocationEnabled = true
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this) { location ->
+        fusedLocationClient.lastLocation.addOnSuccessListener(activity) { location ->
             // Got last known location. In some rare situations this can be null.
             if (location != null) {
                 lastLocation = location
@@ -243,7 +259,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         try {
             if (lastLocationMarker != null ) {
-                Toast.makeText(this , "if statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
+                Toast.makeText(context , "if statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
                 lastLocationMarker!!.remove()
 
                 if (firstTime){
@@ -252,11 +268,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 }
 
             }else{
-                Toast.makeText(this , "else statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
+                Toast.makeText(context , "else statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
 
             }
         }catch (e:java.lang.Exception){
-            Toast.makeText(this , "ERROR: " + e.message, Toast.LENGTH_LONG).show()
+            Toast.makeText(context , "ERROR: " + e.message, Toast.LENGTH_LONG).show()
         }
 
         lastLocationMarker = map.addMarker(markerOptions)
@@ -291,10 +307,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onProviderDisabled(p0: String?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }*/
-
-
-
-
 
 
 

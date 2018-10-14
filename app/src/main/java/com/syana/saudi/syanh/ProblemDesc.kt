@@ -34,7 +34,7 @@ class ProblemDesc : AppCompatActivity() {
 
     fun buSendOrderEvent(view: View){
 
-        val intent = Intent(this, MapsActivity::class.java)
+        val intent = Intent(this, FindStoreActivity::class.java)
         //intent.putExtra("title", mRepair.title)
         startActivity( intent )
         /*

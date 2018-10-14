@@ -27,7 +27,7 @@ class Login : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance()
     }
 
     fun buLoginEvent(view:View){
