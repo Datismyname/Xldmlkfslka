@@ -18,6 +18,9 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
+import kotlinx.android.synthetic.main.activity_find_store.*
+
 
 class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
@@ -48,33 +51,60 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mView =  inflater!!.inflate(R.layout.fragment_map, container, false)
+
+
+
         return mView
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        if (activity.fab.visibility != View.VISIBLE){
+            activity.fab.visibility = View.VISIBLE
+            Toast.makeText(context," it's not VISIBLE !!", Toast.LENGTH_SHORT).show()
+        }
         mMapView = mView.findViewById(R.id.mapView)
 
         if (mMapView != null){
 
+
             mMapView.onCreate(null)
             mMapView.onResume()
             mMapView.getMapAsync(this)
+            mMapView.setPadding(0,0,0,200)
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(p0: LocationResult) {
+                super.onLocationResult(p0)
+
+
+
+                lastLocation = p0.lastLocation
+
+                trackMyLocation(LatLng(lastLocation.latitude, lastLocation.longitude))
+            }
+        }
+
+        createLocationRequest()
+
+
     }
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+   /* override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        /*val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)*/
+        *//*val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)*//*
 
 
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+        *//*fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
@@ -87,8 +117,8 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
             }
         }
 
-        createLocationRequest()
-    }
+        createLocationRequest()*//*
+    }*/
 
     override fun onMarkerClick(p0: Marker?)= false
 
@@ -165,7 +195,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     }
 
     // 3
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         if (locationUpdateState) {
             startLocationUpdates()
@@ -194,18 +224,38 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        map.getUiSettings().setZoomControlsEnabled(true)
+        map.uiSettings.isZoomControlsEnabled = false
 
-        map.setOnMyLocationButtonClickListener {
-            cameraTracksLocation = true
-            false
+
+        map.setOnCameraMoveListener {
+            placeMarkerOnMap(map.cameraPosition.target)
         }
 
-        map.setOnCameraMoveStartedListener {
-            if(!firstTime){
-                cameraTracksLocation = false
+        map.setOnCameraMoveStartedListener {reason->
+            when (reason) {
+                OnCameraMoveStartedListener.REASON_GESTURE -> {
+                    Toast.makeText(context, "The user gestured on the map. cameraTracksLocation= $cameraTracksLocation",Toast.LENGTH_SHORT).show()
+                    cameraTracksLocation = false
+                    //placeMarkerOnMap(map.cameraPosition.target)
+                }
+                OnCameraMoveStartedListener.REASON_API_ANIMATION -> {
+                    Toast.makeText(context, "The user tapped something on the map. cameraTracksLocation= $cameraTracksLocation", Toast.LENGTH_SHORT).show()
+                    cameraTracksLocation = true
+                    firstTime = false
+                    //placeMarkerOnMap(map.cameraPosition.target)
+                }
+                OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION -> {
+                    Toast.makeText(context, "The app moved the camera.", Toast.LENGTH_SHORT).show()
+                    //placeMarkerOnMap(map.cameraPosition.target)
+                }
             }
+
+
         }
+
+
+
+
 
 
         map.setOnMarkerClickListener(this)
@@ -224,6 +274,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     }
 
 
+
     private fun setUpMap() {
         if (ActivityCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -239,8 +290,8 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
             if (location != null) {
                 lastLocation = location
                 val currentLatLng = LatLng(location.latitude, location.longitude)
-                placeMarkerOnMap(currentLatLng)
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
+                //placeMarkerOnMap(currentLatLng)
+                trackMyLocation(currentLatLng)
             }
         }
     }
@@ -248,6 +299,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
 
     private fun placeMarkerOnMap(location: LatLng) {
+        //Toast.makeText(context,"cameraTracksLocation = $cameraTracksLocation", Toast.LENGTH_SHORT ).show()
         // 1
         val markerOptions = MarkerOptions().position(location)
                 .title("Marker in Sydney")
@@ -259,16 +311,12 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
         try {
             if (lastLocationMarker != null ) {
-                Toast.makeText(context , "if statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
+               // Toast.makeText(context , "if statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
                 lastLocationMarker!!.remove()
 
-                if (firstTime){
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 14f))
-                    firstTime = false
-                }
 
             }else{
-                Toast.makeText(context , "else statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
+             //   Toast.makeText(context , "else statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
 
             }
         }catch (e:java.lang.Exception){
@@ -278,12 +326,21 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         lastLocationMarker = map.addMarker(markerOptions)
 
 
+    }
+
+
+    fun trackMyLocation(location: LatLng){
+
         if(cameraTracksLocation) {
-            val cameraUpdate = CameraUpdateFactory.newLatLng(location)
+
+            var cameraUpdate = if (firstTime){
+                CameraUpdateFactory.newLatLngZoom(location, 14f)
+            }else{
+                CameraUpdateFactory.newLatLng(location)
+            }
+
             map.animateCamera(cameraUpdate)
         }
-
-
     }
 
 
