@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_find_store.*
 
@@ -43,6 +44,36 @@ class FindStoreActivity : AppCompatActivity() {
 
         container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
         tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
+
+        this.fab.visibility = View.GONE
+        container.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                if (position == 1){
+                    this@FindStoreActivity.fab.visibility = View.VISIBLE
+
+                }else{
+                    this@FindStoreActivity.fab.visibility = View.GONE
+                }
+                when(position){
+
+                    0 -> {
+                        Toast.makeText(this@FindStoreActivity," i'm in Rating Fragment", Toast.LENGTH_SHORT).show()
+
+                    }
+
+                    1 -> {
+                        Toast.makeText(this@FindStoreActivity," i'm in maps Fragment", Toast.LENGTH_SHORT).show()
+                    }
+
+                    2 -> {
+                        Toast.makeText(this@FindStoreActivity," i'm in All Fragment", Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+            }
+        })
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -81,11 +112,17 @@ class FindStoreActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment? {
             when(position){
 
-                0 -> { return FindByRatingActivity() }
+                0 -> {
+                    return FindByRatingActivity()
+                }
 
-                1 -> { return FindByMapActivity() }
+                1 -> {
+                    return FindByMapActivity()
+                }
 
-                2 -> { return FindByAllActivity() }
+                2 -> {
+                    return FindByAllActivity()
+                }
 
             }
 

@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -58,10 +59,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        if (activity.fab.visibility != View.VISIBLE){
-            activity.fab.visibility = View.VISIBLE
-            Toast.makeText(context," it's not VISIBLE !!", Toast.LENGTH_SHORT).show()
-        }
+
         mMapView = mView.findViewById(R.id.mapView)
 
         if (mMapView != null){
@@ -200,6 +198,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         if (locationUpdateState) {
             startLocationUpdates()
         }
+
     }
 
 
@@ -231,11 +230,13 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
             placeMarkerOnMap(map.cameraPosition.target)
         }
 
+
         map.setOnCameraMoveStartedListener {reason->
             when (reason) {
                 OnCameraMoveStartedListener.REASON_GESTURE -> {
                     Toast.makeText(context, "The user gestured on the map. cameraTracksLocation= $cameraTracksLocation",Toast.LENGTH_SHORT).show()
                     cameraTracksLocation = false
+                    activity.fab.setImageResource(R.drawable.drop_pin_move)
                     //placeMarkerOnMap(map.cameraPosition.target)
                 }
                 OnCameraMoveStartedListener.REASON_API_ANIMATION -> {
@@ -250,6 +251,11 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
                 }
             }
 
+
+        }
+
+        map.setOnCameraIdleListener {
+            activity.fab.setImageResource(R.drawable.drop_pin_wave)
 
         }
 
