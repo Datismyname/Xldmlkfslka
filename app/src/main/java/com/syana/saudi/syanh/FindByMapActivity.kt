@@ -20,7 +20,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlinx.android.synthetic.main.activity_find_store.*
+import kotlinx.android.synthetic.main.fragment_map.*
 
 
 class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -118,7 +120,13 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         createLocationRequest()*//*
     }*/
 
-    override fun onMarkerClick(p0: Marker?)= false
+    override fun onMarkerClick(p0: Marker?): Boolean {
+
+
+
+
+        return true
+    }
 
 
 
@@ -227,7 +235,11 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
 
         map.setOnCameraMoveListener {
-            placeMarkerOnMap(map.cameraPosition.target)
+            if (lastLocationMarker != null ) {
+                lastLocationMarker!!.remove()
+            }
+            dropPin.visibility = View.VISIBLE
+            dropPin.setImageResource(R.drawable.drop_pin_move)
         }
 
 
@@ -236,12 +248,17 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
                 OnCameraMoveStartedListener.REASON_GESTURE -> {
                     Toast.makeText(context, "The user gestured on the map. cameraTracksLocation= $cameraTracksLocation",Toast.LENGTH_SHORT).show()
                     cameraTracksLocation = false
-                    activity.fab.setImageResource(R.drawable.drop_pin_move)
+                    /*activity.fab.setImageResource(R.drawable.drop_pin_move)
+                    if (lastLocationMarker != null ) {
+                        lastLocationMarker!!.remove()
+                    }
+                    dropPin.visibility = View.VISIBLE
+                    dropPin.setImageResource(R.drawable.drop_pin_move)*/
                     //placeMarkerOnMap(map.cameraPosition.target)
                 }
                 OnCameraMoveStartedListener.REASON_API_ANIMATION -> {
                     Toast.makeText(context, "The user tapped something on the map. cameraTracksLocation= $cameraTracksLocation", Toast.LENGTH_SHORT).show()
-                    cameraTracksLocation = true
+                    //cameraTracksLocation = true
                     firstTime = false
                     //placeMarkerOnMap(map.cameraPosition.target)
                 }
@@ -249,13 +266,18 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
                     Toast.makeText(context, "The app moved the camera.", Toast.LENGTH_SHORT).show()
                     //placeMarkerOnMap(map.cameraPosition.target)
                 }
+
             }
 
 
         }
 
         map.setOnCameraIdleListener {
-            activity.fab.setImageResource(R.drawable.drop_pin_wave)
+            //activity.fab.setImageResource(R.drawable.drop_pin_wave)
+            Toast.makeText(context,"setOnCameraIdleListener", Toast.LENGTH_SHORT ).show()
+
+            dropPin.visibility = View.GONE
+            placeMarkerOnMap(map.cameraPosition.target)
 
         }
 
@@ -265,6 +287,7 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
 
         map.setOnMarkerClickListener(this)
+
 
         // Add a marker in Sydney and move the camera
         val riyadh = LatLng(24.7253981,46.2620271)
@@ -305,31 +328,26 @@ class FindByMapActivity:Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
 
     private fun placeMarkerOnMap(location: LatLng) {
+        Toast.makeText(context,"placeMarkerOnMap function fired", Toast.LENGTH_SHORT ).show()
         //Toast.makeText(context,"cameraTracksLocation = $cameraTracksLocation", Toast.LENGTH_SHORT ).show()
         // 1
         val markerOptions = MarkerOptions().position(location)
-                .title("Marker in Sydney")
+                .title("إلقني هنا")
                 .snippet("her is me")
-        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.memarker))
+        .icon(BitmapDescriptorFactory.fromResource(R.drawable.drop_pin))
 
 
         // 2
 
-        try {
             if (lastLocationMarker != null ) {
                // Toast.makeText(context , "if statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
                 lastLocationMarker!!.remove()
 
 
-            }else{
-             //   Toast.makeText(context , "else statment lastLocationMarker " + lastLocationMarker , Toast.LENGTH_LONG).show()
-
             }
-        }catch (e:java.lang.Exception){
-            Toast.makeText(context , "ERROR: " + e.message, Toast.LENGTH_LONG).show()
-        }
 
         lastLocationMarker = map.addMarker(markerOptions)
+        lastLocationMarker!!.showInfoWindow()
 
 
     }
